@@ -21,6 +21,40 @@ void ATank::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAxis(TEXT("MoveForward"), this, &ATank::Move);
+	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &ATank::Turn);
+
+	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed,this, &ATank::Fire);
+}
+
+void ATank::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	if(PlayerControllerRef != nullptr)
+	{
+		FHitResult HitResult;
+		PlayerControllerRef->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility,
+			false,
+			HitResult);
+		DrawDebugSphere(
+			GetWorld(),
+			HitResult.ImpactPoint,
+			10.f,
+			12,
+			FColor::Emerald,
+			false,
+			-1.f
+			);
+		RotateTurret(HitResult.ImpactPoint);
+	}
+		
+}
+
+void ATank::BeginPlay()
+{
+	Super::BeginPlay();
+
+	PlayerControllerRef = Cast<APlayerController>(GetController());	
+
 }
 
 
@@ -29,8 +63,16 @@ void ATank::Move(float Value)
 	// zeroes out the vector
 	FVector DeltaLocation = FVector::ZeroVector;
 	// X = Value * DeltaTime * MoveSpeed 
-	DeltaLocation.X = Value * UGameplayStatics::GetWorldDeltaSeconds(this) * MoveSpeed;
+	DeltaLocation.X = Value * MoveSpeed * UGameplayStatics::GetWorldDeltaSeconds(this);
 	AddActorLocalOffset(DeltaLocation, true);
+}
+
+void ATank::Turn(float Value)
+{
+	FRotator DeltaRotation = FRotator::ZeroRotator;
+	// Yaw = Value * DeltaTime * TurnRate
+	DeltaRotation.Yaw = Value * TurnRate * UGameplayStatics::GetWorldDeltaSeconds(this);
+	AddActorLocalRotation(DeltaRotation, true);
 }
 
 
