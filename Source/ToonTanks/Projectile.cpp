@@ -2,6 +2,7 @@
 
 
 #include "Projectile.h"
+#include "Components/StaticMeshComponent.h"
 
 // Sets default values
 AProjectile::AProjectile()
