@@ -29,31 +29,30 @@ void ATank::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 void ATank::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if(PlayerControllerRef != nullptr)
+	if(TankPlayerController != nullptr)
 	{
 		FHitResult HitResult;
-		PlayerControllerRef->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility,
+		TankPlayerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility,
 			false,
 			HitResult);
-		DrawDebugSphere(
-			GetWorld(),
-			HitResult.ImpactPoint,
-			10.f,
-			12,
-			FColor::Emerald,
-			false,
-			-1.f
-			);
 		RotateTurret(HitResult.ImpactPoint);
 	}
 		
 }
 
+void ATank::HandleDestruction()
+{
+	Super::HandleDestruction();
+	SetActorHiddenInGame(true);
+	SetActorTickEnabled(false);
+}
+
+
 void ATank::BeginPlay()
 {
 	Super::BeginPlay();
 
-	PlayerControllerRef = Cast<APlayerController>(GetController());	
+	TankPlayerController = Cast<APlayerController>(GetController());	
 
 }
 
