@@ -5,6 +5,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/Gameplaystatics.h"
 #include "Projectile.h"
+#include "Camera/CameraShakeBase.h"
 
 // Sets default values
 ABasePawn::ABasePawn()
@@ -27,7 +28,22 @@ ABasePawn::ABasePawn()
 
 void ABasePawn::HandleDestruction()
 {
-	// TODO: Visual/sfx
+	// Visual/sfx
+	if(DeathParticles != nullptr)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(
+			this,
+			DeathParticles,
+			GetActorLocation(),
+			GetActorRotation()
+			);
+		if(DeathSound != nullptr)
+			UGameplayStatics::PlaySoundAtLocation(this, DeathSound, GetActorLocation(), GetActorRotation());
+	}
+
+	// Camera Shake
+	if(DeathCameraShakeClass != nullptr)
+		GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(DeathCameraShakeClass);
 }
 
 void ABasePawn::RotateTurret(FVector LookAtTarget)
@@ -46,10 +62,11 @@ void ABasePawn::RotateTurret(FVector LookAtTarget)
 
 void ABasePawn::Fire()
 {
-	FVector SpawnPointLocation = ProjectileSpawnPoint->GetComponentLocation();
-
+	FVector const SpawnPointLocation = ProjectileSpawnPoint->GetComponentLocation();
+	FRotator const SpawnPointRotation = ProjectileSpawnPoint->GetComponentRotation();
+	
 	// auto lets the compiler decide what type the variable "Projectile" should be
-	auto Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjectileSpawnPoint->GetComponentLocation(), ProjectileSpawnPoint->GetComponentRotation());
+	auto Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SpawnPointLocation, SpawnPointRotation);
 
 	Projectile->SetOwner(this);
 }

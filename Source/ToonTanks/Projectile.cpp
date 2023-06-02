@@ -7,6 +7,7 @@
 #include "GameFramework/DamageType.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Camera/CameraShakeBase.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -32,6 +33,10 @@ void AProjectile::BeginPlay()
 	Super::BeginPlay();
 
 	ProjectileMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
+
+	if(LaunchSound != nullptr)
+		UGameplayStatics::PlaySoundAtLocation(this, LaunchSound, GetActorLocation(), GetActorRotation(), 1.f, .5f);
+
 }
 
 // Called every frame
@@ -53,11 +58,16 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 	auto MyOwnerInstigator = MyOwner->GetInstigatorController();
 	auto DamageTypeClass = UDamageType::StaticClass();
 
+	
 	// check to make sure there's a receiver for the damage,
 	// make sure the receiver doesn't damage themselves
 	// make sure the receiver doesn't damage the controller
 	if(OtherActor != nullptr && OtherActor != this && OtherActor != MyOwner)
 	{
+		// Play SFX
+		if(HitSound != nullptr)
+			UGameplayStatics::PlaySoundAtLocation(this, HitSound, GetActorLocation(), GetActorRotation());
+
 		UGameplayStatics::ApplyDamage(
 			OtherActor,
 			Damage,
@@ -75,8 +85,13 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 				GetActorRotation()
 				);
 		}
+
+		// Camera Shake
+		if(HitCameraShakeClass != nullptr)
+		{
+			GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(HitCameraShakeClass);
+		}
 	}
-	
 	Destroy();
 }
 
