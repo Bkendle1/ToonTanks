@@ -91,7 +91,18 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 		{
 			GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(HitCameraShakeClass);
 		}
+
+		ProjectileMesh->SetHiddenInGame(true);
+		ProjectileMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		FTimerHandle DelayedDestruction;
+		GetWorldTimerManager().SetTimer(DelayedDestruction, this, &AProjectile::DelayedDestruction, 0.5f, false);
 	}
+}
+
+void AProjectile::DelayedDestruction()
+{
 	Destroy();
 }
+
 

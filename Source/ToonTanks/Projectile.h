@@ -51,4 +51,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category="Combat")
 	TSubclassOf<class UCameraShakeBase> HitCameraShakeClass;
+
+	void DelayedDestruction();
 };
